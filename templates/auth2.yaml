@@ -1,0 +1,96 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ $.Release.Name }}
+  namespace: {{ $.Release.Namespace }}
+spec:
+  progressDeadlineSeconds: 600
+  replicas: {{ $.Values.auth2.replicas | default 1 }}
+  selector:
+    matchLabels:
+      workload.user.cattle.io/workloadselector: apps.deployment-{{ $.Release.Namespace }}-{{ $.Release.Name }}
+  strategy:
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 25%
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        workload.user.cattle.io/workloadselector: apps.deployment-{{ $.Release.Namespace }}-{{ $.Release.Name }}
+      namespace: {{ $.Release.Namespace }}
+    spec:
+      topologySpreadConstraints:
+      - maxSkew: 1
+        topologyKey: kubernetes.io/hostname
+        #minDomains: 1
+        whenUnsatisfiable: ScheduleAnyway
+        labelSelector:
+          matchLabels:
+            workload.user.cattle.io/workloadselector: apps.deployment-{{ $.Release.Namespace }}-{{ $.Release.Name }}
+      containers:
+        - name: auth2
+          image: {{ $.Values.auth2.image}}
+          env:
+            {{- range $key,$value := $.Values.auth2.common_envs }}
+            - name: {{ $key }}
+              value: {{ $value | quote }}
+            {{- end }}
+            {{- range $key,$value := $.Values.auth2.envs }}
+            - name: {{ $key }}
+              value: {{ $value | quote }}
+            {{- end }}
+          envFrom:
+            - secretRef:
+                name: {{ $.Release.Name }}-secret-db
+                optional: false
+            - secretRef:
+                name: {{ $.Release.Name }}-secret-secretkey
+                optional: false
+            - secretRef:
+                name: {{ $.Release.Name }}-secret-adb2c
+                optional: false
+            - secretRef:
+                name: {{ $.Release.Name }}-secret-apple
+                optional: false
+          startupProbe:
+            failureThreshold: {{ $.Values.auth2.startupProbe.failureThreshold | default 3 }}
+            httpGet:
+              httpHeaders:
+                - name: Host
+                  value: {{ get $.Values.auth2.common_envs "AUTH2_DOMAIN" }}
+              path: /ping
+              port: {{ $.Values.auth2.port | default 8080 }}
+              scheme: HTTP
+            initialDelaySeconds: {{ $.Values.auth2.startupProbe.initialDelaySeconds | default 5 }}
+            periodSeconds: {{ $.Values.auth2.startupProbe.periodSeconds | default 10 }}
+            successThreshold: {{ $.Values.auth2.startupProbe.successThreshold | default 1 }}
+            timeoutSeconds: {{ $.Values.auth2.startupProbe.timeoutSeconds | default 3 }}
+          livenessProbe:
+            failureThreshold: {{ $.Values.auth2.livenessProbe.failureThreshold | default 1 }}
+            httpGet:
+              httpHeaders:
+                - name: Host
+                  value: {{ get $.Values.auth2.common_envs "AUTH2_DOMAIN" }}
+              path: /ping
+              port: {{ $.Values.auth2.port | default 8080 }}
+              scheme: HTTP
+            initialDelaySeconds: {{ $.Values.auth2.livenessProbe.initialDelaySeconds | default 10 }}
+            periodSeconds: {{ $.Values.auth2.livenessProbe.periodSeconds | default 300 }}
+            successThreshold: {{ $.Values.auth2.livenessProbe.successThreshold | default 1 }}
+            timeoutSeconds: {{ $.Values.auth2.livenessProbe.timeoutSeconds | default 3 }} 
+          resources: {}
+          securityContext:
+            allowPrivilegeEscalation: false
+            privileged: false
+            readOnlyRootFilesystem: false
+            runAsNonRoot: false
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+      dnsPolicy: ClusterFirst
+      imagePullSecrets:
+        - name: {{ $.Release.Name }}-secret-imagepull
+      restartPolicy: Always
+      schedulerName: default-scheduler
+      securityContext: {}
+      terminationGracePeriodSeconds: 30

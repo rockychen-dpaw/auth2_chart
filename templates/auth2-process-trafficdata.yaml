@@ -1,0 +1,52 @@
+{{- if $.Values.auth2.process_trafficdata }}
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: {{ $.Release.Name}}-process-trafficdata
+  namespace: {{ $.Release.Namespace }}
+spec:
+  concurrencyPolicy: Forbid
+  jobTemplate:
+    metadata:
+      namespace: {{ $.Release.Namespace }}
+    spec:
+      template:
+        spec:
+          affinity: {}
+          containers:
+            - command:
+                - ./run_command
+                - process_trafficdata
+              env:
+                - name: DEBUG
+                  value: {{ $.Values.auth2.common_envs.DEBUG | default "False" | quote }}
+                - name: LOGLEVEL
+                  value: {{ $.Values.auth2.common_envs.LOG_LEVEL | default "WARNING" | quote }}
+                - name: AUTH2_CLUSTERID
+                  value: "HARVEST_TRAFFIC_DATA"
+                - name: AUTH2_DOMAIN
+                  value: {{ $.Values.auth2.common_envs.AUTH2_DOMAIN | quote }}
+              envFrom:
+                - secretRef:
+                    name: {{ $.Release.Name}}-secret-db
+                    optional: false
+              image: {{ $.Values.auth2.image}}
+              imagePullPolicy: Always
+              name: {{ $.Release.Name}}-process-trafficdata
+              resources: {}
+              stdin: true
+              terminationMessagePath: /dev/termination-log
+              terminationMessagePolicy: File
+              tty: true
+          dnsPolicy: ClusterFirst
+          imagePullSecrets:
+            - name: {{ $.Release.Name }}-secret-imagepull
+          restartPolicy: Never
+          schedulerName: default-scheduler
+          securityContext: {}
+          terminationGracePeriodSeconds: 30
+  schedule: {{ $.Values.auth2.process_trafficdata.schedule }}
+  successfulJobsHistoryLimit: {{ $.Values.auth2.process_trafficdata.successfulJobsHistoryLimit | default 3 }}
+  failedJobsHistoryLimit: {{ $.Values.auth2.process_trafficdata.failedJobsHistoryLimit | default 1 }}
+  suspend: false
+{{- end }}
