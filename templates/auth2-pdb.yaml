@@ -1,0 +1,12 @@
+{{- $replicas := $.Values.auth2.replicas | default 1 | int }}
+{{- if gt $replicas 1 }}
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: {{ $.Release.Name }}
+spec:
+  minAvailable: {{ sub $replicas 1 }}
+  selector:
+    matchLabels:
+      workload.user.cattle.io/workloadselector: apps.deployment-{{ $.Release.Namespace }}-{{ $.Release.Name }}
+{{- end }}
