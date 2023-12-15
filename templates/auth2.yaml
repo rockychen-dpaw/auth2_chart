@@ -41,18 +41,11 @@ spec:
               value: {{ $value | quote }}
             {{- end }}
           envFrom:
+            {{- range $name,$data := $.Values.auth2.secrets }}
             - secretRef:
-                name: {{ $.Release.Name }}-secret-db
+                name: {{ $.Release.Name }}-secret-{{ $name }}
                 optional: false
-            - secretRef:
-                name: {{ $.Release.Name }}-secret-secretkey
-                optional: false
-            - secretRef:
-                name: {{ $.Release.Name }}-secret-adb2c
-                optional: false
-            - secretRef:
-                name: {{ $.Release.Name }}-secret-apple
-                optional: false
+            {{- end }}
           startupProbe:
             failureThreshold: {{ $.Values.auth2.startupProbe.failureThreshold | default 3 }}
             httpGet:
@@ -84,7 +77,9 @@ spec:
             allowPrivilegeEscalation: false
             privileged: false
             readOnlyRootFilesystem: false
-            runAsNonRoot: false
+            runAsNonRoot: true
+            capabilities: {}
+            runAsUser: 33
           terminationMessagePath: /dev/termination-log
           terminationMessagePolicy: File
       dnsPolicy: ClusterFirst
