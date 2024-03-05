@@ -78,13 +78,8 @@ spec:
           resources:
 {{ $.Values.auth2.resources | toYaml | indent 12 }}
           {{- end }}
-          securityContext:
-            allowPrivilegeEscalation: false
-            privileged: false
-            readOnlyRootFilesystem: false
-            runAsNonRoot: true
-            capabilities: {}
-            runAsUser: 33
+          securityContext: 
+{{ $.Values.auth2.securityContext | toYaml | indent 12 }}
           terminationMessagePath: /dev/termination-log
           terminationMessagePolicy: File
       dnsPolicy: ClusterFirst
@@ -92,5 +87,4 @@ spec:
         - name: {{ $.Release.Name }}-secret-imagepull
       restartPolicy: Always
       schedulerName: default-scheduler
-      securityContext: {}
       terminationGracePeriodSeconds: 30
