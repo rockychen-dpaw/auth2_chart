@@ -38,13 +38,13 @@ spec:
               terminationMessagePath: /dev/termination-log
               terminationMessagePolicy: File
               tty: true
+              securityContext: 
+{{ $.Values.auth2.securityContext | toYaml | indent 16 }}
           dnsPolicy: ClusterFirst
           imagePullSecrets:
             - name: {{ $.Release.Name }}-secret-imagepull
           restartPolicy: Never
           schedulerName: default-scheduler
-          securityContext: 
-{{ $.Values.auth2.securityContext | toYaml | indent 12 }}
           terminationGracePeriodSeconds: 30
   schedule: {{ $.Values.auth2.process_trafficdata.schedule }}
   successfulJobsHistoryLimit: {{ $.Values.auth2.process_trafficdata.successfulJobsHistoryLimit | default 3 }}
