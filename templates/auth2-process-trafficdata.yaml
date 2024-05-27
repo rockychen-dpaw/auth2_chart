@@ -19,13 +19,13 @@ spec:
                 - process_trafficdata
               env:
                 - name: DEBUG
-                  value: {{ $.Values.auth2.common_envs.DEBUG | default "False" | quote }}
+                  value: {{ $.Values.auth2.envs.DEBUG | default "False" | quote }}
                 - name: LOGLEVEL
-                  value: {{ $.Values.auth2.common_envs.LOG_LEVEL | default "WARNING" | quote }}
+                  value: {{ $.Values.auth2.LOG_LEVEL | default "WARNING" | quote }}
                 - name: AUTH2_CLUSTERID
                   value: "HARVEST_TRAFFIC_DATA"
                 - name: AUTH2_DOMAIN
-                  value: {{ $.Values.auth2.common_envs.AUTH2_DOMAIN | quote }}
+                  value: {{ $.Values.auth2.configmaps.settings.AUTH2_DOMAIN | quote }}
               envFrom:
                 - secretRef:
                     name: {{ $.Release.Name}}-secret-db

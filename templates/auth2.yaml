@@ -34,10 +34,6 @@ spec:
           env:
             - name: RELEASE_TIME
               value: {{ now | date "2006-01-02T15:04:05" | quote }}
-            {{- range $key,$value := $.Values.auth2.common_envs }}
-            - name: {{ $key }}
-              value: {{ $value | quote }}
-            {{- end }}
             {{- range $key,$value := $.Values.auth2.envs }}
             - name: {{ $key }}
               value: {{ $value | quote }}
@@ -48,12 +44,17 @@ spec:
                 name: {{ $.Release.Name }}-secret-{{ $name }}
                 optional: false
             {{- end }}
+            {{- range $name,$data := $.Values.auth2.configmaps }}
+            - configMapRef:
+                name: {{ $.Release.Name }}-{{ $name }}
+                optional: false
+            {{- end }}
           startupProbe:
             failureThreshold: {{ $.Values.auth2.startupProbe.failureThreshold | default 3 }}
             httpGet:
               httpHeaders:
                 - name: Host
-                  value: {{ get $.Values.auth2.common_envs "AUTH2_DOMAIN" }}
+                  value: {{ get $.Values.auth2.configmaps.settings "AUTH2_DOMAIN" }}
               path: /ping
               port: {{ $.Values.auth2.port | default 8080 }}
               scheme: HTTP
@@ -66,7 +67,7 @@ spec:
             httpGet:
               httpHeaders:
                 - name: Host
-                  value: {{ get $.Values.auth2.common_envs "AUTH2_DOMAIN" }}
+                  value: {{ get $.Values.auth2.configmaps.settings "AUTH2_DOMAIN" }}
               path: /ping
               port: {{ $.Values.auth2.port | default 8080 }}
               scheme: HTTP

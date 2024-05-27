@@ -6,7 +6,7 @@ metadata:
 spec:
   ingressClassName: nginx
   rules:
-    - host: {{ $.Values.auth2.common_envs.AUTH2_DOMAIN }}
+    - host: {{ $.Values.auth2.configmaps.settings.AUTH2_DOMAIN }}
       http:
         paths:
           - backend:
