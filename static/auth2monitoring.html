@@ -1,0 +1,21 @@
+<html>
+    <head>
+        <title></title>
+        <script>
+            function showdetailusage(servername) {
+                detail = document.getElementById("#" + servername + "detailusage")
+                if (detail.style.display == "none") {
+                    detail.style.display = "block"
+                    document.getElementById("#" + servername + "detailusage").innerHTML = "-"
+                } else {
+                    detail.style.display = "none"
+                    document.getElementById("#" + servername + "detailusage").innerHTML = "+"
+                }
+            }
+        </script>
+    </head>
+    <body>
+        <ol>
+        </ol>
+    </body>
+</html>

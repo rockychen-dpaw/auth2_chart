@@ -1,0 +1,33 @@
+<html>
+    <head>
+        <title></title>
+        <script>
+            function showdetailusage(servername) {
+                detail = document.getElementById("#" + servername + "detailusage")
+                if (detail.style.display == "none") {
+                    detail.style.display = "block"
+                    document.getElementById("#" + servername + "detailusage").innerHTML = "-"
+                } else {
+                    detail.style.display = "none"
+                    document.getElementById("#" + servername + "detailusage").innerHTML = "+"
+                }
+            }
+        </script>
+    </head>
+    <body>
+        <table>
+            <caption><span id="clusterhead"></span></caption>
+            <thead>
+                <tr>
+                    <th>Auth2 Server</th>
+                    <th>Ready Time</th>
+                    <th>Heartbeat</th>
+                    <th>Status</th>
+                    <th>Resource Usage</th>
+                    <th>Monitoring</th>
+                </tr>
+            </thead>
+            <tbody>
+            </tbody>
+    </body>
+</html>
