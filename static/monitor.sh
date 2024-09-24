@@ -4,21 +4,20 @@ today=$(date '+%Y-%m-%d')
 if [[ "${AUTH2_CLUSTERID}" == "" ]]; then
     mkdir -p "${AUTH2_MONITORING_DIR}/auth2/${HOSTNAME}"
     serverinfofile="${AUTH2_MONITORING_DIR}/auth2/serverinfo.html"
-    monitorfile="${AUTH2_MONITORING_DIR}/auth2/${HOSTNAME}/$(date '+%Y-%m-%d').html"
+    monitoringfile="${AUTH2_MONITORING_DIR}/auth2/${HOSTNAME}/$(date '+%Y-%m-%d').html"
 else
     mkdir -p "${AUTH2_MONITORING_DIR}/auth2/${AUTH2_CLUSTERID}/${HOSTNAME}"
     serverinfofile="${AUTH2_MONITORING_DIR}/auth2/${AUTH2_CLUSTERID}/serverinfo.html"
-    monitorfile="${AUTH2_MONITORING_DIR}/auth2/${AUTH2_CLUSTERID}/${HOSTNAME}/${today}.html"
+    monitoringfile="${AUTH2_MONITORING_DIR}/auth2/${AUTH2_CLUSTERID}/${HOSTNAME}/${today}.html"
 fi
-
 if [[ ! -f "${serverinfofile}" ]]; then
-    cp /app/html/auth2serverinfo.html "${serverinfofile}"
+    cp ~/projects/auth2_chart/static/auth2serverinfo.html "${serverinfofile}"
     if [[ "${AUTH2_CLUSTERID}" == "" ]]; then
-        sed -i "0,/<title[^<]*<\/title>/s//<title>The information for auth2 server<\/title>/" ${serverinfofile}
-        sed -i "0,/<span id=\"clusterhead\">[^<]*<\/span>s//<span id=\"clusterhead\">Auth2 Server Information<\/span>/" ${serverinfofile}
+        sed -i "0,/<title[^<]*<\/title>/s//<title>Auth2 Server Monitoring Data<\/title>/" ${serverinfofile}
+        sed -i "0,/<span id=\"clusterhead\">[^<]*<\/span>s//<span id=\"clusterhead\">Auth2 Server Monitoring data<\/span>/" ${serverinfofile}
     else
-        sed -i "0,/<title[^<]*<\/title>/s//<title>The information for auth2 cluster '${AUTH2_CLUSTERID}'<\/title>/" ${serverinfofile}
-        sed -i "0,/<span id=\"clusterhead\">[^<]*<\/span>/s//<span id=\"clusterhead\">Auth2 Cluster(${AUTH2_CLUSTERID}) Information<\/span>/" ${serverinfofile}
+        sed -i "0,/<title[^<]*<\/title>/s//<title>The auth2 cluster '${AUTH2_CLUSTERID}' Monitoring Data<\/title>/" ${serverinfofile}
+        sed -i "0,/<span id=\"clusterhead\">[^<]*<\/span>/s//<span id=\"clusterhead\">Auth2 Cluster(${AUTH2_CLUSTERID}) Monitoring Data<\/span>/" ${serverinfofile}
     fi
 fi
 
@@ -26,7 +25,7 @@ fi
 count=$(grep "<tr><td>${HOSTNAME}</td>" ${serverinfofile} | wc -l)
 if [[ $count -eq 0 ]]; then
     #Add that auth2 server into serverinfo file
-    sed -i "0,/<tbody>/s//<tbody>\n<tr><td>${HOSTNAME}<\/td><td id='${HOSTNAME}readytime'><\/td><td id='${HOSTNAME}heartbeat'>${now}</td><td id='${HOSTNAME}status'><\/td><td><div id='${HOSTNAME}resusage'><\/td><td><ol id='${HOSTNAME}monitoring'></ol><\/td><\/tr>/" ${serverinfofile}
+    sed -i "0,/<tbody>/s//<tbody>\n<tr><td>${HOSTNAME}<\/td><td id='${HOSTNAME}readytime'><\!--readytime--><\/td><td id='${HOSTNAME}heartbeat'>${now}<\!--heartbeat--><\/td><td id='${HOSTNAME}processingtime'><\!--processingtime--><\/td><td id='${HOSTNAME}status'><\!--status--><\/td><td><div id='${HOSTNAME}resusage'><\/div><\!--resusage--><\/td><td><ol id='${HOSTNAME}monitoring'><\/ol><\!--monitoring--><\/td><\/tr>/" ${serverinfofile}
     #Manage the number of servers in the serverinfo file
     count=$(grep "<tr.*</tr>" ${serverinfofile} | wc -l)
     if [[ $count -gt ${maxMonitorServers} ]]; then
@@ -38,28 +37,38 @@ if [[ $count -eq 0 ]]; then
         sed -i -e "${firstrow},${lastrow}d" ${serverinfofile}
     fi
 else
-    sed -i "0,/<td id='${HOSTNAME}heartbeat'><\/td>/s//<td id='${HOSTNAME}heartbeat'>${now}<\/td>/" ${serverinfofile}
+    sed -i "0,/<td id='${HOSTNAME}heartbeat'>.*<\!--heartbeat-->/s//<td id='${HOSTNAME}heartbeat'>${now}<\!--heartbeat-->/" ${serverinfofile}
 fi
 
-if [[ ! -f "${monitorfile}" ]]; then
-    cp /app/html/auth2monitoring.html "${monitorinfofile}"
+if [[ ! -f "${monitoringfile}" ]]; then
+    cp ~/projects/auth2_chart/static/auth2monitoring.html "${monitoringfile}"
     if [[ "${AUTH2_CLUSTERID}" == "" ]]; then
-        sed -i "0,/<title[^<]*<\/title>/s//<title>The monitoring data for auth2 server($HOSTNAME)<\/title>/" ${serverinfofile}
+        sed -i "0,/<title[^<]*<\/title>/s//<title>The monitoring data for auth2 server($HOSTNAME)<\/title>/" ${monitoringfile}
     else
-        sed -i "0,/<title[^<]*<\/title>/s//<title>The monitoring data for auth2 server(${AUTH2_CLUSTERID}:$HOSTNAME)<\/title>/" ${serverinfofile}
+        sed -i "0,/<title[^<]*<\/title>/s//<title>The monitoring data for auth2 server(${AUTH2_CLUSTERID}:$HOSTNAME)<\/title>/" ${monitoringfile}
     fi
-    sed -i "0,/<ol id='${HOSTNAME}monitoring'>/s//<ol id='${HOSTNAME}monitoring'><li><a href='/admin/monitor/${today}.html'>${today}<\/a><\/li>/" ${serverinfofile}
+    sed -i "0,/<ol id='${HOSTNAME}monitoring'>/s//<ol id='${HOSTNAME}monitoring'><li><a href='\/admin\/monitor\/${today}.html'>${today}<\/a><\/li>/" ${serverinfofile}
 fi
 
-wget --tries=1 --timeout=${pingTimeout} http://127.0.0.1:8080/ping -o /dev/null -O /tmp/auth2_ping.json
+starttime=$(date '+%s.%N')
+wget --tries=1 --timeout=${pingTimeout} http://127.0.0.1:${PORT}/ping -o /dev/null -O /tmp/auth2_ping.json
 status=$?
+echo "status=${status}"
+endtime=$(date '+%s.%N')
+pingtime=$(perl -e "print (${endtime} - ${starttime}) * 1000")
 
+sed -i "0,/<td id='${HOSTNAME}processingtime'>.*<\!--processingtime-->/s//<td id='${HOSTNAME}processingtime'>$(printf %.2f ${pingtime}) ms<\!--processingtime-->/" ${serverinfofile}
 #set auth2 starttime
 if [[ $status -eq 0 ]]; then
     #auth2 is ready to use
-    sed -i "0,/<td id='${HOSTNAME}status'><\/td>/s//<td id='${HOSTNAME}status'>$(cat /tmp/auth2_ping.json)<\/td>/" ${serverinfofile}
+    pingstatus=$(cat '/tmp/auth2_ping.json')
+    pingstatus=$(echo "${pingstatus//$'\n'/<br>}" | tr '"' "'" | tr '(' '<' | tr ')' '>')
+    pingstatus="<pre>${pingstatus}<\/pre>"
+
+    #sed -i "0,/<td id='${HOSTNAME}status'>.*<\!--status-->/s//<td id='${HOSTNAME}status'>$(cat /tmp/auth2_ping.json)<\!--status-->/" ${serverinfofile}
+    sed -i "0,/<td id='${HOSTNAME}status'>.*<\!--status-->/s//<td id='${HOSTNAME}status'>${pingstatus}<\!--status-->/" ${serverinfofile}
 else
-    sed -i "0,/<td id='${HOSTNAME}status'><\/td>/s//<td id='${HOSTNAME}status'>Failed<\/td>/" ${serverinfofile}
+    sed -i "0,/<td id='${HOSTNAME}status'>.*<\!--status-->/s//<td id='${HOSTNAME}status'>Failed<\!--status-->/" ${serverinfofile}
 fi
 
 declare -a auth2pids;
@@ -82,23 +91,44 @@ done
 totalvsusage=($(perl -e "print ${totalvsusage} / 1024"))
 totalrsusage=($(perl -e "print ${totalrsusage} / 1024"))
 
-resourceusage="<div class='summary' id='${HOSTNAME}${nowseconds}'>Total CPU : $(printf %.1f ${totalcpuusage}) , Virutal Memory : $(printf %.2fM ${totalvsusage}) , Memory : $(printf %.2fM ${totalrsusage})</div><a href='javascript:void(0)' onclick='show_detailusage(\"${HOSTNAME}${nowseconds}\")' id='${HOSTNAME}${nowseconds}detaillink'>+</a><ul style='display:none' id='${HOSTNAME}${nowseconds}detailusage' class='detail'>"
+resourceusage="<div class='summary' id='${HOSTNAME}'>Total CPU : $(printf %.1f ${totalcpuusage}) , Virutal Memory : $(printf %.2fM ${totalvsusage}) , Memory : $(printf %.2fM ${totalrsusage})<\/div><div id='${HOSTNAME}detail' class='detail'><ul>"
 
 auth2processes=${#auth2pids[@]};
 for (( i=0; i<${auth2processes}; i++ )); do 
-    resourceusage="${resourceusage}<li>CPU : $(printf %.2f ${cpuusages[i]}) , Virtual Memory : $(printf %.2fM ${vsusages[i]}) , Memory : $(printf %.2fM ${rsusages[i]}) </li>"
+    resourceusage="${resourceusage}<li>CPU : $(printf %.2f ${cpuusages[i]}) , Virtual Memory : $(printf %.2fM ${vsusages[i]}) , Memory : $(printf %.2fM ${rsusages[i]}) <\/li>"
 done
-resourceusage="${resourceusage}</ul></div>"
 
-sed -i "0,/<td id='${HOSTNAME}resusage'><\/td>/s//<td id='${HOSTNAME}resusage'>${resourceusage}<\/td>/" ${serverinfofile}
+resourceusage="${resourceusage}<\/ul><\/div>"
+
+sed -i "0,/<td><div id='${HOSTNAME}resusage'>.*<\!--resusage-->/s//<td><div id='${HOSTNAME}resusage'>${resourceusage}<\!--resusage-->/" ${serverinfofile}
 
 if [[ -f "/tmp/nextmonitortime" ]]; then
     nexttime=$(cat /tmp/nextmonitortime)
 else
     nexttime=0
 fi
-if [[ $(date '+%s') -ge ${nexttime} ]] ; then
-    sed -i "0,/<ol>/s//<ol>\n<li>resourceusage<\/li>/" ${monitorfile}
-    echo "$(date -d '+${monitorInterval} seconds' '+%s')" > /tmp/nextmonitortime
+#if [[ $(date '+%s') -ge ${nexttime} ]] ; then
+if [[ $(date '+%s') -ge 0 ]] ; then
+    message="<a href='javascript:void(0)' onclick='showdetailusage(\"${HOSTNAME}${nowseconds}\")' id='${HOSTNAME}${nowseconds}detaillink'>+<\/a> ${now} : "
+    message="${message}<span class='summary' id='${HOSTNAME}${nowseconds}'>Total CPU : $(printf %.1f ${totalcpuusage}) , Virutal Memory : $(printf %.2fM ${totalvsusage}) , Memory : $(printf %.2fM ${totalrsusage})<\/span>"
+    if [[ $status -eq 0 ]]; then
+        message="${message} : Ping time=$(printf %.2f ${pingtime}) ms , Ping Result = Succeed "
+    else
+        message="${message} : Ping time=$(printf %.2f ${pingtime}) ms , Ping Result = Failed "
+    fi
+    message="${message} : <div style='display:none' id='${HOSTNAME}${nowseconds}detail' class='detail'><ul>"
+
+    for (( i=0; i<${auth2processes}; i++ )); do 
+        message="${message}<li>CPU : $(printf %.2f ${cpuusages[i]}) , Virtual Memory : $(printf %.2fM ${vsusages[i]}) , Memory : $(printf %.2fM ${rsusages[i]}) <\/li>"
+    done
+    if [[ $status -eq 0 ]]; then
+        message="${message}<div>${pingstatus}<\/div><\/ul><\/div>"
+    else
+        message="${message}<\/ul><\/div>"
+    fi
+
+    sed -i "0,/<ol>/s//<ol>\n<li>${message}<\/li>/" ${monitoringfile}
+    nextmonitortime=$(date -d "+${monitorInterval} seconds" "+%s")
+    echo "${nextmonitortime}" > /tmp/nextmonitortime
 fi
 

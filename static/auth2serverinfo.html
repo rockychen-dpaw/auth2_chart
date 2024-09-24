@@ -1,18 +1,38 @@
 <html>
     <head>
         <title></title>
-        <script>
-            function showdetailusage(servername) {
-                detail = document.getElementById("#" + servername + "detailusage")
-                if (detail.style.display == "none") {
-                    detail.style.display = "block"
-                    document.getElementById("#" + servername + "detailusage").innerHTML = "-"
-                } else {
-                    detail.style.display = "none"
-                    document.getElementById("#" + servername + "detailusage").innerHTML = "+"
-                }
+        <style>
+            table {
+            	border-collapse: collapse;
+                font-family: Tahoma, Geneva, sans-serif;
             }
-        </script>
+            table td {
+            	padding: 15px;
+            }
+            table thead th {
+            	background-color: #54585d;
+            	color: #ffffff;
+            	font-weight: bold;
+            	font-size: 13px;
+            	border: 1px solid #54585d;
+            }
+            table tbody td {
+            	color: #636363;
+            	border: 1px solid #dddfe1;
+            }
+            table tbody tr {
+            	background-color: #f9fafb;
+            }
+            table tbody tr:nth-child(odd) {
+            	background-color: #ffffff;
+            }
+            table caption {
+              font-weight: bold;
+              font-size: 16px;
+              color: #636363;
+              margin: 20px;
+             }
+        </style>       
     </head>
     <body>
         <table>
@@ -22,6 +42,7 @@
                     <th>Auth2 Server</th>
                     <th>Ready Time</th>
                     <th>Heartbeat</th>
+                    <th>ProcessingTime</th>
                     <th>Status</th>
                     <th>Resource Usage</th>
                     <th>Monitoring</th>

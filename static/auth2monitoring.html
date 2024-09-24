@@ -3,13 +3,13 @@
         <title></title>
         <script>
             function showdetailusage(servername) {
-                detail = document.getElementById("#" + servername + "detailusage")
+                detail = document.getElementById(servername + "detail")
                 if (detail.style.display == "none") {
                     detail.style.display = "block"
-                    document.getElementById("#" + servername + "detailusage").innerHTML = "-"
+                    document.getElementById(servername + "detaillink").innerHTML = "-"
                 } else {
                     detail.style.display = "none"
-                    document.getElementById("#" + servername + "detailusage").innerHTML = "+"
+                    document.getElementById(servername + "detaillink").innerHTML = "+"
                 }
             }
         </script>
