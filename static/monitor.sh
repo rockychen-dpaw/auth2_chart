@@ -62,10 +62,11 @@ sed -i "0,/<td id='${HOSTNAME}processingtime'>.*<\!--processingtime-->/s//<td id
 if [[ $status -eq 0 ]]; then
     #auth2 is ready to use
     pingstatus=$(cat '/tmp/auth2_ping.json')
-    pingstatus=$(echo "${pingstatus//$'\n'/<br>}" | tr '"' "'" | tr '(' '<' | tr ')' '>')
+    pingstatus="${pingstatus//$'\n'/<br>}"
+    pingstatus="${pingstatus//$'/'/\\/}"
+    pingstatus=$(echo "${pingstatus}" | tr '"' "'" | tr '(' '<' | tr ')' '>' )
     pingstatus="<pre>${pingstatus}<\/pre>"
 
-    #sed -i "0,/<td id='${HOSTNAME}status'>.*<\!--status-->/s//<td id='${HOSTNAME}status'>$(cat /tmp/auth2_ping.json)<\!--status-->/" ${serverinfofile}
     sed -i "0,/<td id='${HOSTNAME}status'>.*<\!--status-->/s//<td id='${HOSTNAME}status'>${pingstatus}<\!--status-->/" ${serverinfofile}
 else
     sed -i "0,/<td id='${HOSTNAME}status'>.*<\!--status-->/s//<td id='${HOSTNAME}status'>Failed<\!--status-->/" ${serverinfofile}
