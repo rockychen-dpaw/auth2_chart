@@ -34,7 +34,7 @@ spec:
           env:
             - name: RELEASE_TIME
               value: {{ now | date "2006-01-02T15:04:05" | quote }}
-            {{- if $.Values.auth2.monitor }}
+            {{- if $.Values.auth2.monitoring }}
             - name: AUTH2_MONITORING_DIR
               value: "/app/monitoring"
             {{- end }}
@@ -55,7 +55,7 @@ spec:
             {{- end }}
           startupProbe:
             failureThreshold: {{ $.Values.auth2.startupProbe.failureThreshold | default 3 }}
-            {{- if and $.Values.auth2.monitor false }}
+            {{- if $.Values.auth2.monitoring }}
             exec:
               command:
                 - /app/bin/auth2_startup
@@ -75,7 +75,7 @@ spec:
             successThreshold: {{ $.Values.auth2.startupProbe.successThreshold | default 1 }}
           livenessProbe:
             failureThreshold: {{ $.Values.auth2.livenessProbe.failureThreshold | default 1 }}
-            {{- if and $.Values.auth2.monitor false }}
+            {{- if $.Values.auth2.monitoring }}
             exec:
               command:
                 - /app/bin/auth2_liveness
@@ -101,7 +101,7 @@ spec:
 {{ $.Values.auth2.securityContext | toYaml | indent 12 }}
           terminationMessagePath: /dev/termination-log
           terminationMessagePolicy: File
-          {{- if $.Values.auth2.monitor }}
+          {{- if $.Values.auth2.monitoring }}
           volumeMounts:
             - name: monitoring-scripts
               mountPath: "/app/bin"
@@ -116,7 +116,9 @@ spec:
       restartPolicy: Always
       schedulerName: default-scheduler
       terminationGracePeriodSeconds: 30
-      {{- if $.Values.auth2.monitor }}
+      {{- if $.Values.auth2.monitoring }}
+      securityContext:
+        fsGroup: 1000
       volumes:
       - name: monitoring-scripts
         configMap:

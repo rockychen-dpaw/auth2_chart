@@ -1,4 +1,4 @@
-{{- if $.Values.auth2.monitor }}
+{{- if $.Values.auth2.monitoring }}
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -22,8 +22,10 @@ metadata:
 binaryData:
   auth2serverinfo.html: >- 
 {{ $.Files.Get "static/auth2serverinfo.html" | b64enc | indent 4 }}
-  auth2monitoring.html: >- 
-{{ $.Files.Get "static/auth2monitoring.html" | b64enc | indent 4 }}
+  auth2liveness.html: >- 
+{{ $.Files.Get "static/auth2liveness.html" | b64enc | indent 4 }}
+  auth2livenessfooter.html: >- 
+{{ $.Files.Get "static/auth2livenessfooter.html" | b64enc | indent 4 }}
 
 ---
 {{- $config := $.Values.auth2.volume | default dict }}
@@ -36,7 +38,7 @@ spec:
     - {{ $config.accessMode | default "ReadWriteMany" }}
   resources:
     requests:
-      storage: {{ $config.storage | default "0.5Gi" | quote }}
+      storage: {{ $config.storage | default "1Gi" | quote }}
   storageClassName: {{ $config.storageClassName | default "azurefile-csi-retain" }}
   volumeMode: {{ $config.volumeMode | default "Filesystem" }}
 {{- end }}

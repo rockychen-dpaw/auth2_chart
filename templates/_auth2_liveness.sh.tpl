@@ -1,9 +1,10 @@
 {{- define "auth2.auth2_liveness" }}#!/bin/bash
-pingTimeout={{$.Values.auth2.livenessProbe.timeoutSeconds | default 0.5 }}
-monitorInterval={{- $.Values.auth2.monitor.interval | default 60 }}
-maxMonitorServers={{$.Values.auth2.monitor.maxServers | default 50 | int}}
-PORT=8080
+PING_TIMEOUT={{$.Values.auth2.livenessProbe.timeoutSeconds | default 0.5 }}
+MONITOR_INTERVAL={{- $.Values.auth2.monitoring.interval | default 60 }}
+EXPIREDAYS={{- $.Values.auth2.monitoring.expiredays | default 10 }}
 
 {{ $.Files.Get "static/monitor.sh"  }}
+
+exit $status
 {{- end }}
 

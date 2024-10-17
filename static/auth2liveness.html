@@ -1,0 +1,82 @@
+<html>
+    <head>
+        <title></title>
+        <script>
+            function showdetailusage(servername) {
+                detail = document.getElementById(servername + "detail")
+                if (detail.style.display == "none") {
+                    detail.style.display = "block"
+                    document.getElementById(servername + "detaillink").innerHTML = "-"
+                } else {
+                    detail.style.display = "none"
+                    document.getElementById(servername + "detaillink").innerHTML = "+"
+                }
+            }
+        </script>
+        <style>
+            #content ol li a{
+                color: blue;
+                font-weight: bold;
+                font-size: 16;
+                padding-left: 5px;
+                padding-right: 5px;
+            }
+            #content ol li span {
+                color: blue;
+                font-weight: bold;
+                font-size: 14;
+                white-space:pre;
+            }
+            #content ol li ul li {
+                font-size: 14;
+                font-style:italic;
+                white-space:pre;
+            }
+            #content ol li div pre {
+                font-size: 14px;
+                font-style: italic;
+                margin-left: 30px;
+                margin-top: 0px;
+                color: #2c7114;
+            }
+        </style>
+        <link rel="stylesheet" type="text/css" href="/sso/static/admin/css/base.css">
+        <link rel="stylesheet" type="text/css" href="/sso/static/admin/css/forms.css">
+        <script src="/admin/jsi18n/"></script>
+        <meta name="viewport" content="user-scalable=no, width=device-width, initial-scale=1.0, maximum-scale=1.0">
+        <link rel="stylesheet" type="text/css" href="/sso/static/admin/css/responsive.css">
+        <meta name="robots" content="NONE,NOARCHIVE">
+    </head>
+    <body class=" app-model-change-list" data-admin-utc-offset="28800">
+        <!-- Container -->
+        <div id="container">
+            <!-- Header -->
+            <div id="header" style="background:#2D2F32">
+                <div id="logo" style="margin-left:50px;vertical-align:middle">
+                    <img src="/sso/static/images/logo.svg" style="width:318.45px;height:92px"/>
+        
+                </div>
+                <div  style="vertical-align:middle;margin-left:30px">
+                    <img src="/sso/static/images/WW4WA_White_small.png" style="vertical-align:middle"/>
+        
+                </div>
+                <div id="user-tools">
+                        Welcome,
+                        <strong>Rocky(Staff)(rocky.chen@dbca.wa.gov.au)</strong>
+                        <img src="/sso/static/images/settings.svg" onclick="document.location='/sso/setting?back=/admin'" style="width:13px;height:13px;cursor:pointer">
+                    <span style="padding-left:10px">
+                            <a href="/sso/auth_logout">Logout</a>
+                    </span>
+                </div>
+            </div>
+            <!-- END Header -->
+        
+            <div class="breadcrumbs">
+                <a href="/admin/">Home</a>
+                &rsaquo; <a href="/admin/authome/">AUTHENTICATION AND AUTHORIZATION</a>
+                &rsaquo; <span id="breadcrumb1"></span>
+                &rsaquo; <span id="breadcrumb2"></span>
+            </div>
+            <!-- Content -->
+            <div id="content" class="">
+                <ol id="content">
