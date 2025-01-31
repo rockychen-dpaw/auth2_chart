@@ -1,9 +1,15 @@
 PORT=8080
-SERVICEID=${HOSTNAME}
 
 nowseconds=$(date '+%s')
 now=$(date '+%Y-%m-%d %H:%M:%S')
 today=$(date '+%Y-%m-%d')
+
+if [[ ! -f "/tmp/serviceid" ]]; then
+    SERVICEID="${HOSTNAME}-$(date '+%H%M%S')"
+    echo ${SERVICEID} > /tmp/serviceid
+else
+    SERVICEID="$(cat /tmp/serviceid)"
+fi
 
 if [[ "${AUTH2_CLUSTERID}" == "" ]]; then
     monitoringhome="${AUTH2_MONITORING_DIR}/auth2/standalone"
