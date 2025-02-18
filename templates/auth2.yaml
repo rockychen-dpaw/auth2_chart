@@ -101,25 +101,32 @@ spec:
 {{ $.Values.auth2.securityContext | toYaml | indent 12 }}
           terminationMessagePath: /dev/termination-log
           terminationMessagePolicy: File
-          {{- if $.Values.auth2.monitoring }}
           volumeMounts:
+            {{- if $.Values.auth2.monitoring }}
             - name: monitoring-scripts
               mountPath: "/app/bin"
             - name: monitoring-htmls
               mountPath: "/app/html"
-            - name: monitoring-data
-              mountPath: "/app/monitoring"
-          {{- end }}
+            {{- end }}
+            {{- range $name,$config := $.Values.auth2.volumes | default dict }}
+            {{- range $i,$mount := $config.mounts }}
+            - mountPath: {{ $mount.mountPath | quote }}
+              name: {{ $name }}
+              {{- if hasKey $mount "subPath" }}
+              subPath: {{ $mount.subPath | quote }}
+              {{- end }}
+            {{- end }}  
+            {{- end }}
       dnsPolicy: ClusterFirst
       imagePullSecrets:
         - name: {{ $.Release.Name }}-secret-imagepull
       restartPolicy: Always
       schedulerName: default-scheduler
       terminationGracePeriodSeconds: 30
-      {{- if $.Values.auth2.monitoring }}
       securityContext:
         fsGroup: 1000
       volumes:
+      {{- if $.Values.auth2.monitoring }}
       - name: monitoring-scripts
         configMap:
           name: {{ $.Release.Name }}-auth2-configmap-monitoring-scripts
@@ -130,7 +137,9 @@ spec:
           name: {{ $.Release.Name }}-auth2-configmap-monitoring-htmls
           optional: false
           defaultMode: 0444
-      - name: monitoring-data
+      {{- end }}
+      {{- range $name,$config := $.Values.auth2.volumes | default dict }}
+      - name: {{$name}}
         persistentVolumeClaim:
-          claimName: {{ $.Release.Name }}-auth2-monitoring-data
+          claimName: {{ $.Release.Name }}-auth2-{{$name}}
       {{- end }}

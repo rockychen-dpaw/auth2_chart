@@ -33,17 +33,18 @@ if [[ ! -f "${serverinfofile}" ]]; then
     echo -e "<tr>\n<td id='${SERVICEID}'>${SERVICEID}</td>\n<td id='${SERVICEID}readytime'></td>\n<td id='${SERVICEID}heartbeat'>${now}</td>\n<td id='${SERVICEID}processingtime'></td>\n<td id='${SERVICEID}status'>\n<!--start_status-->\n<!--end_status-->\n</td>\n<td id='${SERVICEID}resusage'>\n</td>\n<td>\n<ul id='${SERVICEID}monitoring'>\n</ul>\n</td>\n</tr>" > "${serverinfofile}"
     cp /app/html/auth2livenessfooter.html ${livenessfooterfile}
 else
-    serverinfochanges="-e \"s/<td id='${SERVICEID}heartbeat'>.*/<td id='${SERVICEID}heartbeat'>${now}<\/td>/\" "
+    sed -i -e "s/<td id='${SERVICEID}heartbeat'>.*/<td id='${SERVICEID}heartbeat'>${now}<\/td>/" ${serverinfofile} 
 fi
+
 if [[ ! -f "${livenessfile}" ]]; then
     cp /app/html/auth2liveness.html "${livenessfile}"
     chmod 775 "${livenessfile}"
     newlivenessfile=1
     if [[ "${AUTH2_CLUSTERID}" == "" ]]; then
-        serverinfochanges="${serverinfochanges} -e \"s/<ul id='${SERVICEID}monitoring'>/<ul id='${SERVICEID}monitoring'>\n<li><a href='\/admin\/liveness\/${SERVICEID}\/${today}.html'>${today}<\/a><\/li>/\" "
+        sed -i -e "s/<ul id='${SERVICEID}monitoring'>/<ul id='${SERVICEID}monitoring'>\n<li><a href='\/admin\/liveness\/${SERVICEID}\/${today}.html'>${today}<\/a><\/li>/" ${serverinfofile} 
         sed -i -e "0,/<title[^<]*<\/title>/s//<title>Auth2 server($SERVICEID) Liveness Data<\/title>/" -e "0,/<span id=\"breadcrumb1\">[^<]*<\/span>/s//<span id=\"breadcrumb1\"><a href=\"\/admin\/auth2status\">Auth2 Server Status<\/a><\/span>/" -e "0,/<span id=\"breadcrumb2\">[^<]*<\/span>/s//<span id=\"breadcrumb2\">${today}<\/span>/" -e "0,/<span id=\"breadcrumb2\">[^<]*<\/span>/s//<span id=\"breadcrumb2a\">${SERVICEID}<\/span> \&rsaquo; <span id=\"breadcrumb2b\">${today}<\/span>/" ${livenessfile}
     else
-        serverinfochanges="${serverinfochanges} -e \"s/<ul id='${SERVICEID}monitoring'>/<ul id='${SERVICEID}monitoring'>\n<li><a href='\/admin\/liveness\/${AUTH2_CLUSTERID}\/${SERVICEID}\/${today}.html'>${today}<\/a><\/li>/\""
+        sed -i -e "s/<ul id='${SERVICEID}monitoring'>/<ul id='${SERVICEID}monitoring'>\n<li><a href='\/admin\/liveness\/${AUTH2_CLUSTERID}\/${SERVICEID}\/${today}.html'>${today}<\/a><\/li>/" ${serverinfofile}
         sed -i -e "0,/<title[^<]*<\/title>/s//<title>Auth2 cluster(${AUTH2_CLUSTERID}:$SERVICEID) Liveness Data<\/title>/" -e "0,/<span id=\"breadcrumb1\">[^<]*<\/span>/s//<span id=\"breadcrumb1a\">Auth2 Cluster Status<\/span> \&rsaquo; <span id=\"breadcrumb1b\"><a href=\"\/admin\/auth2status\/${AUTH2_CLUSTERID}\">${AUTH2_CLUSTERID}<\/a><\/span>/" -e "0,/<span id=\"breadcrumb2\">[^<]*<\/span>/s//<span id=\"breadcrumb2a\">${SERVICEID}<\/span> \&rsaquo; <span id=\"breadcrumb2b\">${today}<\/span>/" ${livenessfile}
     fi
     #manage the monitoring files

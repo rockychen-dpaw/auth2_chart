@@ -27,18 +27,4 @@ binaryData:
   auth2livenessfooter.html: >- 
 {{ $.Files.Get "static/auth2livenessfooter.html" | b64enc | indent 4 }}
 
----
-{{- $config := $.Values.auth2.volume | default dict }}
-apiVersion: v1
-kind: PersistentVolumeClaim
-metadata:
-  name: {{ $.Release.Name }}-auth2-monitoring-data
-spec:
-  accessModes:
-    - {{ $config.accessMode | default "ReadWriteMany" }}
-  resources:
-    requests:
-      storage: {{ $config.storage | default "1Gi" | quote }}
-  storageClassName: {{ $config.storageClassName | default "azurefile-csi-retain" }}
-  volumeMode: {{ $config.volumeMode | default "Filesystem" }}
 {{- end }}

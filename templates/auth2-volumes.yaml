@@ -1,0 +1,20 @@
+{{- $count := 0 }}
+{{- range $name,$config := $.Values.auth2.volumes | default dict }}
+{{- $count = add $count 1}}
+{{- if gt $count 1 }}
+---
+{{- end }}
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ $.Release.Name }}-auth2-{{ $name }}
+spec:
+  accessModes:
+    - {{ $config.accessMode | default "ReadWriteOnce" }}
+  resources:
+    requests:
+      storage: {{ $config.storage | default "1Gi" | quote }}
+  storageClassName: {{ $config.storageClassName | default "managed-csi-retain" }}
+  volumeMode: {{ $config.volumeMode | default "Filesystem" }}
+{{- end }}
+
