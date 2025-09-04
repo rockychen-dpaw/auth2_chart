@@ -124,6 +124,14 @@ spec:
       restartPolicy: Always
       schedulerName: default-scheduler
       terminationGracePeriodSeconds: 30
+      {{ if hasKey $.Values.auth2 "tolerations" }}
+      tolerations:
+{{ $.Values.auth2.tolerations | toYaml | indent 8 }}
+      {{- end }}
+      {{- if $.Values.auth2.nodeSelector }}
+      nodeSelector:
+{{ $.Values.auth2.nodeSelector | toYaml | indent 8 }}
+      {{- end }}
       securityContext:
         fsGroup: 1000
       volumes:
