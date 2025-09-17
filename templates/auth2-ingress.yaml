@@ -16,3 +16,26 @@ spec:
                   number: {{ $.Values.auth2.port | default 8080 }}
             path: /
             pathType: Prefix
+{{- if $.Values.auth2.clusterinterconnectdomain }}
+
+---
+
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ $.Release.Name }}-clusterinterconnect-ingress
+  namespace: {{ $.Release.Namespace }}
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: {{ $.Values.auth2.clusterinterconnectdomain }}
+      http:
+        paths:
+          - backend:
+              service:
+                name: {{ $.Release.Name }}
+                port:
+                  number: {{ $.Values.auth2.port | default 8080 }}
+            path: /cluster/
+            pathType: Prefix
+{{- end }}
